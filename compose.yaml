@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    restart: on-failure
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=toor
+    networks:
+      - alec-network
+    volumes:
+      - mongo-alecdb:/data/db
+      - mongo-configdb:/data/configdb
+
+  app:
+    depends_on:
+      - mongo
+    image: projetalec-app:latest
+    container_name: projetalec-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATA_MONGO_URI=mongodb://root:toor@mongodb:27017/alecappdb?authSource=admin
+    ports:
+      - "8080:8080"
+    networks:
+      - alec-network
+
+networks:
+  alec-network:
+    driver: bridge
+
+volumes:
+  mongo-alecdb:
+    name: mongo-alecdb
+  mongo-configdb:
+    name: mongo-configdb
